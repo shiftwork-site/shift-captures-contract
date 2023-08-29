@@ -14,7 +14,7 @@ describe("SHIFTCAPTURES", async function () {
   });
   it("should deploy and create collection and mint successfully", async () => {
     await contractDeployed.createCollection(
-      "LINZ", "Ars Electronica", "Lorem Ipsum", true, "https://oyster.ignimgs.com/mediawiki/apis.ign.com/pokemon-blue-version/8/89/Pikachu.jpg?width=325", 1691618380155, 1000
+      "LINZ", "Ars Electronica", "Lorem Ipsum", true, "https://oyster.ignimgs.com/mediawiki/apis.ign.com/pokemon-blue-version/8/89/Pikachu.jpg?width=325", 1988146800000, 1000
     );
     console.log(await contractDeployed.collections(
       1
@@ -32,7 +32,7 @@ describe("SHIFTCAPTURES", async function () {
 
   it("should fail when minting is disabled for collection", async () => {
     await contractDeployed.createCollection(
-      "LINZ", "Ars Electronica", "Lorem Ipsum", true, "https://oyster.ignimgs.com/mediawiki/apis.ign.com/pokemon-blue-version/8/89/Pikachu.jpg?width=325", 1691618380155, 1000
+      "LINZ", "Ars Electronica", "Lorem Ipsum", true, "https://oyster.ignimgs.com/mediawiki/apis.ign.com/pokemon-blue-version/8/89/Pikachu.jpg?width=325", 1988146800000, 1000
     );
     await contractDeployed.setMintingEnabled(1, false);
 

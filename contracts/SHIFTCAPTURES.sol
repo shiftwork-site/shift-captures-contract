@@ -5,11 +5,14 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/Base64.sol";
+import "hardhat/console.sol";
 
 contract SHIFTCAPTURES is ERC1155, Ownable {
     using Counters for Counters.Counter;
     address public developer;
     string public name = "SHIFT CAPTURES";
+
+    event TokenMinted(uint256 tokenId, address minter);
 
     // a capture collection includes the metadata for one specific
     struct CaptureCollection {
@@ -55,7 +58,7 @@ contract SHIFTCAPTURES is ERC1155, Ownable {
         _;
     }
 
-    function setDeveloper(address _developer) external onlyOwner {
+    function setDeveloper(address _developer) external ownerOrDev {
         developer = _developer;
     }
 
@@ -90,16 +93,6 @@ contract SHIFTCAPTURES is ERC1155, Ownable {
         string memory metadataURI,
         address payable royaltyRecipient
     ) external ownerOrDev returns (uint256) {
-        require(
-            collections[blueprintId].mintingEnabled,
-            "Minting is not enabled for this collection."
-        );
-
-        require(
-            block.timestamp < collections[blueprintId].closingDate,
-            "You're too late. Minting for this collection expired."
-        );
-
         tokenIdTracker.increment();
         uint256 newTokenId = tokenIdTracker.current();
 
@@ -123,6 +116,18 @@ contract SHIFTCAPTURES is ERC1155, Ownable {
     }
 
     function mint(address account, uint256 tokenId, uint256 amount) public {
+        uint256 blueprintId = tokenToCollection[tokenId];
+
+        require(
+            collections[blueprintId].mintingEnabled,
+            "Minting is not enabled for this collection."
+        );
+
+        require(
+            block.timestamp * 1000 < collections[blueprintId].closingDate,
+            "You're too late. Minting for this collection expired."
+        );
+
         _mint(account, tokenId, amount, "");
         tokenMintCount[tokenId]++;
 
@@ -131,6 +136,8 @@ contract SHIFTCAPTURES is ERC1155, Ownable {
             hasMinted[tokenId][account] = true;
             tokenMinterCount[tokenId]++;
         }
+        emit TokenMinted(tokenId, account);
+
     }
 
     function royaltyInfo(
