@@ -14,7 +14,6 @@ contract SHIFTCAPTURES is ERC1155, Ownable {
 
     event TokenMinted(uint256 tokenId, address minter);
 
-    // a capture collection includes the metadata for one specific
     struct CaptureCollection {
         string title;
         string employer;
