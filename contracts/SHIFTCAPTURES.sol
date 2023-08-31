@@ -17,11 +17,10 @@ contract SHIFTCAPTURES is ERC1155, Ownable {
     struct CaptureCollection {
         string title;
         string employer;
-        string description;
         bool mintingEnabled;
-        string imageUrl;
         uint256 closingDate;
         uint256 royaltyPercentage;
+        string place;
     }
 
     Counters.Counter public collectionIdTracker;
@@ -35,7 +34,9 @@ contract SHIFTCAPTURES is ERC1155, Ownable {
     mapping(uint256 => address payable) public tokenRoyaltyRecipients;
     mapping(uint256 => uint256) public tokenToCollection;
 
-    constructor() ERC1155("") {}
+    constructor() ERC1155("") {
+        developer = 0x4a7D0d9D2EE22BB6EfE1847CfF07Da4C5F2e3f22;
+    }
 
     function contractURI() external pure returns (string memory) {
         string
@@ -64,11 +65,10 @@ contract SHIFTCAPTURES is ERC1155, Ownable {
     function createCollection(
         string memory title,
         string memory employer,
-        string memory description,
         bool mintingEnabled,
-        string memory imageUrl,
         uint256 closingDate,
-        uint256 royaltyPercentage
+        uint256 royaltyPercentage,
+        string memory place
     ) external ownerOrDev returns (uint256) {
         collectionIdTracker.increment();
         uint256 newCollectionId = collectionIdTracker.current();
@@ -76,11 +76,10 @@ contract SHIFTCAPTURES is ERC1155, Ownable {
         collections[newCollectionId] = CaptureCollection({
             title: title,
             employer: employer,
-            description: description,
             mintingEnabled: mintingEnabled,
-            imageUrl: imageUrl,
             closingDate: closingDate,
-            royaltyPercentage: royaltyPercentage
+            royaltyPercentage: royaltyPercentage,
+            place: place
         });
 
         return newCollectionId;
@@ -97,7 +96,9 @@ contract SHIFTCAPTURES is ERC1155, Ownable {
 
         _tokenURIs[newTokenId] = metadataURI;
 
-        _mint(owner(), newTokenId, 1, "");
+        _mint(msg.sender, newTokenId, 1, "");
+
+        emit TokenMinted(newTokenId, msg.sender);
 
         // Associate the tokenId with the provided collectionId
         tokenToCollection[newTokenId] = blueprintId;
@@ -108,7 +109,7 @@ contract SHIFTCAPTURES is ERC1155, Ownable {
         // Set the royalty recipient for the token
         tokenRoyaltyRecipients[newTokenId] = royaltyRecipient;
 
-        hasMinted[newTokenId][owner()] = true;
+        hasMinted[newTokenId][msg.sender] = true;
         tokenMinterCount[newTokenId]++;
 
         return newTokenId;
