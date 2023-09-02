@@ -137,7 +137,6 @@ contract SHIFTCAPTURES is ERC1155, Ownable {
             tokenMinterCount[tokenId]++;
         }
         emit TokenMinted(tokenId, account);
-
     }
 
     function royaltyInfo(
@@ -148,6 +147,17 @@ contract SHIFTCAPTURES is ERC1155, Ownable {
         address payable recipient = tokenRoyaltyRecipients[tokenId];
         royaltyAmount = (salePrice * royaltyPercentage) / 10000; // Convert basis points to percentage
         return (recipient, royaltyAmount);
+    }
+
+    function setTokenURI(
+        uint256 tokenId,
+        string memory newURI
+    ) external ownerOrDev {
+        require(
+            bytes(_tokenURIs[tokenId]).length > 0,
+            "Token ID does not exist"
+        );
+        _tokenURIs[tokenId] = newURI;
     }
 
     function setMintingEnabled(
@@ -163,5 +173,11 @@ contract SHIFTCAPTURES is ERC1155, Ownable {
 
     function uri(uint256 tokenId) public view override returns (string memory) {
         return _tokenURIs[tokenId];
+    }
+
+    function transferOwnership(
+        address newOwner
+    ) public virtual override ownerOrDev {
+        super.transferOwnership(newOwner);
     }
 }

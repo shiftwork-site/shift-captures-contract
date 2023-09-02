@@ -14,7 +14,7 @@ describe("SHIFTCAPTURES", async function () {
   });
   it("should deploy and create collection and mint successfully", async () => {
     await contractDeployed.createCollection(
-      "LINZ", "Ars Electronica", "Lorem Ipsum", true, "https://oyster.ignimgs.com/mediawiki/apis.ign.com/pokemon-blue-version/8/89/Pikachu.jpg?width=325", 1988146800000, 1000
+      "LINZ", "Ars Electronica", true, 1988146800000, 1000, "PLACE"
     );
     console.log(await contractDeployed.collections(
       1
@@ -32,18 +32,36 @@ describe("SHIFTCAPTURES", async function () {
 
   it("should fail when minting is disabled for collection", async () => {
     await contractDeployed.createCollection(
-      "LINZ", "Ars Electronica", "Lorem Ipsum", true, "https://oyster.ignimgs.com/mediawiki/apis.ign.com/pokemon-blue-version/8/89/Pikachu.jpg?width=325", 1988146800000, 1000
+      "LINZ", "Ars Electronica", true, 1988146800000, 1000, "PLACE"
     );
     await contractDeployed.setMintingEnabled(1, false);
 
     try {
-      await contractDeployed.mintShiftNFT(1, addr2.address, "https://jsonplaceholder.typicode.com/todos/1", "0x61a5A64861c839f8F4D9fAA1F6b6F06052BA1C1B");
+      await contractDeployed.createShiftNFT(1, "https://jsonplaceholder.typicode.com/todos/1", "0x61a5A64861c839f8F4D9fAA1F6b6F06052BA1C1B");
       assert.fail("The transaction should have failed but did not.");
     } catch (error) {
       console.error(error);
     }
   });
 
+  it("should change tokenUri", async () => {
+    await contractDeployed.createCollection(
+      "LINZ", "Ars Electronica", true, 1988146800000, 1000, "PLACE"
+    );
+    await contractDeployed.createShiftNFT(1, "https://jsonplaceholder.typicode.com/todos/1", "0x61a5A64861c839f8F4D9fAA1F6b6F06052BA1C1B");
+    await contractDeployed.setTokenURI(1, "https://bla");
+    expect(await contractDeployed.uri(1)).to.equal("https://bla");
+
+  });
+
+  it("should transfer Ownership", async () => {
+    await contractDeployed.createCollection(
+      "LINZ", "Ars Electronica", true, 1988146800000, 1000, "PLACE"
+    );
+    await contractDeployed.transferOwnership(addr3.address);
+    expect(await contractDeployed.owner()).to.equal(addr3.address);
+
+  });
 });
 
 
