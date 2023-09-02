@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -9,7 +9,7 @@ import "hardhat/console.sol";
 
 contract SHIFTCAPTURES is ERC1155, Ownable {
     using Counters for Counters.Counter;
-    address public developer;
+    address public manager;
     string public name = "SHIFT CAPTURES";
 
     event TokenMinted(uint256 tokenId, address minter);
@@ -28,14 +28,14 @@ contract SHIFTCAPTURES is ERC1155, Ownable {
 
     mapping(uint256 => CaptureCollection) public collections;
     mapping(uint256 => string) private _tokenURIs;
-    mapping(uint256 => uint256) public tokenMintCount; // Total mints for each token
-    mapping(uint256 => uint256) public tokenMinterCount; // Count of unique addresses that minted the token
-    mapping(uint256 => mapping(address => bool)) private hasMinted; // Tracks if an address has minted a specific token
+    mapping(uint256 => uint256) public tokenMintCount;
+    mapping(uint256 => uint256) public tokenMinterCount;
+    mapping(uint256 => mapping(address => bool)) private hasMinted;
     mapping(uint256 => address payable) public tokenRoyaltyRecipients;
     mapping(uint256 => uint256) public tokenToCollection;
 
     constructor() ERC1155("") {
-        developer = 0x4a7D0d9D2EE22BB6EfE1847CfF07Da4C5F2e3f22;
+        manager = 0x5eB336F4FfF71e31e378948Bf2B07e6BffDc7C86;
     }
 
     function contractURI() external pure returns (string memory) {
@@ -50,16 +50,16 @@ contract SHIFTCAPTURES is ERC1155, Ownable {
             );
     }
 
-    modifier ownerOrDev() {
+    modifier ownerOrMgr() {
         require(
-            msg.sender == owner() || msg.sender == developer,
-            "Not owner or developer"
+            msg.sender == owner() || msg.sender == manager,
+            "Not owner or manager"
         );
         _;
     }
 
-    function setDeveloper(address _developer) external ownerOrDev {
-        developer = _developer;
+    function setManager(address _manager) external ownerOrMgr {
+        manager = _manager;
     }
 
     function createCollection(
@@ -69,7 +69,7 @@ contract SHIFTCAPTURES is ERC1155, Ownable {
         uint256 closingDate,
         uint256 royaltyPercentage,
         string memory place
-    ) external ownerOrDev returns (uint256) {
+    ) external ownerOrMgr returns (uint256) {
         collectionIdTracker.increment();
         uint256 newCollectionId = collectionIdTracker.current();
 
@@ -85,12 +85,11 @@ contract SHIFTCAPTURES is ERC1155, Ownable {
         return newCollectionId;
     }
 
-    // metadataURI is the IPFS URI for the metadata JSON file
     function createShiftNFT(
         uint256 blueprintId,
         string memory metadataURI,
         address payable royaltyRecipient
-    ) external ownerOrDev returns (uint256) {
+    ) external ownerOrMgr returns (uint256) {
         tokenIdTracker.increment();
         uint256 newTokenId = tokenIdTracker.current();
 
@@ -100,13 +99,10 @@ contract SHIFTCAPTURES is ERC1155, Ownable {
 
         emit TokenMinted(newTokenId, msg.sender);
 
-        // Associate the tokenId with the provided collectionId
         tokenToCollection[newTokenId] = blueprintId;
 
-        // Increment the total mint count for the token
         tokenMintCount[newTokenId]++;
 
-        // Set the royalty recipient for the token
         tokenRoyaltyRecipients[newTokenId] = royaltyRecipient;
 
         hasMinted[newTokenId][msg.sender] = true;
@@ -122,7 +118,6 @@ contract SHIFTCAPTURES is ERC1155, Ownable {
             collections[blueprintId].mintingEnabled,
             "Minting is not enabled for this collection."
         );
-
         require(
             block.timestamp * 1000 < collections[blueprintId].closingDate,
             "You're too late. Minting for this collection expired."
@@ -131,7 +126,6 @@ contract SHIFTCAPTURES is ERC1155, Ownable {
         _mint(account, tokenId, amount, "");
         tokenMintCount[tokenId]++;
 
-        // If this address hasn't minted this token before, increment the unique minter count
         if (!hasMinted[tokenId][account]) {
             hasMinted[tokenId][account] = true;
             tokenMinterCount[tokenId]++;
@@ -145,14 +139,14 @@ contract SHIFTCAPTURES is ERC1155, Ownable {
     ) external view returns (address receiver, uint256 royaltyAmount) {
         uint256 royaltyPercentage = collections[tokenId].royaltyPercentage;
         address payable recipient = tokenRoyaltyRecipients[tokenId];
-        royaltyAmount = (salePrice * royaltyPercentage) / 10000; // Convert basis points to percentage
+        royaltyAmount = (salePrice * royaltyPercentage) / 10000;
         return (recipient, royaltyAmount);
     }
 
     function setTokenURI(
         uint256 tokenId,
         string memory newURI
-    ) external ownerOrDev {
+    ) external ownerOrMgr {
         require(
             bytes(_tokenURIs[tokenId]).length > 0,
             "Token ID does not exist"
@@ -163,7 +157,7 @@ contract SHIFTCAPTURES is ERC1155, Ownable {
     function setMintingEnabled(
         uint256 collectionId,
         bool enabled
-    ) external ownerOrDev {
+    ) external ownerOrMgr {
         require(
             collections[collectionId].mintingEnabled != enabled,
             "Already set to the provided value."
@@ -173,11 +167,5 @@ contract SHIFTCAPTURES is ERC1155, Ownable {
 
     function uri(uint256 tokenId) public view override returns (string memory) {
         return _tokenURIs[tokenId];
-    }
-
-    function transferOwnership(
-        address newOwner
-    ) public virtual override ownerOrDev {
-        super.transferOwnership(newOwner);
     }
 }

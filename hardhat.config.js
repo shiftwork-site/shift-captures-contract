@@ -15,8 +15,15 @@ module.exports = {
     goerli: {
       url: "https://eth-goerli.public.blastapi.io",
       accounts: [process.env.GOERLI_PRIVATE_KEY],
+    },
+    mainnet: {
+      url: process.env.ALCHEMY_MAINNET_URL,
+      accounts: [process.env.MAINNET_PRIVATE_KEY],
+      gas: 3500000
+
     }
   },
+
   etherscan: {
     apiKey: {
       goerli: process.env.ETHERSCAN_API_KEY

@@ -1,4 +1,3 @@
-const ANY = "0x4a7D0d9D2EE22BB6EfE1847CfF07Da4C5F2e3f22";
 describe("SHIFTCAPTURES", async function () {
   let nftContractFactory;
   let contractDeployed;
@@ -54,13 +53,31 @@ describe("SHIFTCAPTURES", async function () {
 
   });
 
-  it("should transfer Ownership", async () => {
+  it("should transfer Ownership By Owner", async () => {
     await contractDeployed.createCollection(
       "LINZ", "Ars Electronica", true, 1988146800000, 1000, "PLACE"
     );
     await contractDeployed.transferOwnership(addr3.address);
     expect(await contractDeployed.owner()).to.equal(addr3.address);
 
+  });
+
+  it("Should fail if collection closing date has expired", async function () {
+    // Setting a past closing date for the collection
+    await contractDeployed.createCollection(
+      "LINZ", "Ars Electronica", true,
+      946681200000, // 01 Jan 2000
+      1000, "PLACE"
+    );
+
+    await contractDeployed.createShiftNFT(
+      1,
+      "ipfs://testURI",
+      addr2.address
+    );
+
+    // Attempt to mint should fail because the collection's closing date has expired
+    await expect(contractDeployed.connect(addr1).mint(addr1.address, 1, 1)).to.be.revertedWith("You're too late. Minting for this collection expired.");
   });
 });
 
