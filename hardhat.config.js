@@ -17,7 +17,7 @@ module.exports = {
       accounts: [process.env.GOERLI_PRIVATE_KEY],
     },
     mainnet: {
-      url: process.env.ALCHEMY_MAINNET_URL,
+      url: process.env.ALCHEMY_HTTP,
       accounts: [process.env.MAINNET_PRIVATE_KEY],
       gas: 3500000
 
@@ -26,7 +26,7 @@ module.exports = {
 
   etherscan: {
     apiKey: {
-      goerli: process.env.ETHERSCAN_API_KEY
+      mainnet: process.env.ETHERSCAN_API_KEY
     }
   },
   solidity: {
