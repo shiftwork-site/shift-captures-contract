@@ -14,14 +14,21 @@ module.exports = {
   {
     goerli: {
       url: "https://eth-goerli.public.blastapi.io",
-      accounts: [process.env.GOERLI_PRIVATE_KEY],
+      accounts: [process.env.TESTNET_PRIVATE_KEY],
     },
     mainnet: {
       url: process.env.ALCHEMY_HTTP,
       accounts: [process.env.MAINNET_PRIVATE_KEY],
       gas: 3500000
 
-    }
+    },
+    holesky: {
+      url: "https://rpc.holesky.ethpandaops.io",
+      accounts: [process.env.TESTNET_PRIVATE_KEY],
+      allowUnlimitedContractSize: true,
+      gas: 5000000, //units of gas you are willing to pay, aka gas limit
+      gasPrice: 50000000000, //gas is typically in units of gwei, but you must enter it as wei here
+    },
   },
 
   etherscan: {
