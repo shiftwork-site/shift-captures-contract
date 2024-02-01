@@ -22,6 +22,14 @@ module.exports = {
       gas: 3500000
 
     },
+    sepolia: {
+      url: process.env.ALCHEMY_SEPOLIA_HTTP,
+      accounts: [process.env.TESTNET_PRIVATE_KEY],
+      allowUnlimitedContractSize: true,
+      gas: 50000000000, //units of gas you are willing to pay, aka gas limit
+      gasPrice: 50000000000, //gas is typically in units of gwei, but you must enter it as wei here
+
+    },
     holesky: {
       url: "https://rpc.holesky.ethpandaops.io",
       accounts: [process.env.TESTNET_PRIVATE_KEY],
@@ -33,7 +41,9 @@ module.exports = {
 
   etherscan: {
     apiKey: {
-      mainnet: process.env.ETHERSCAN_API_KEY
+      mainnet: process.env.ETHERSCAN_API_KEY,
+      sepolia: process.env.ETHERSCAN_API_KEY
+
     }
   },
   solidity: {
